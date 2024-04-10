@@ -45,51 +45,57 @@ public class Calculator {
         File[] listOfFiles = folder.listFiles();
 
         for (File file : listOfFiles) {
-            if (file.isFile()) {
-                String fileName = file.getName();
-                String[] fileParts = fileName.split("\\.");
-
-                if (fileParts.length == 2 && fileParts[1].equals("op")) {
-                    System.out.println("Found file: " + fileName);
-                    processFile(file);
-                }
+            if (file.isFile() && file.getName().endsWith(".op")) {
+                System.out.println("Found file: " + file.getName());
+                processFile(file);
+            } else if (file.isDirectory()) {
+                fileOperation(file); 
             }
         }
     }
 
     public static void processFile(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file.getAbsolutePath().replace(".op", ".res")))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(" ");
-                    if (parts.length != 3) {
-                        writer.write("ERROR");
-                        writer.newLine();
-                        continue;
-                    }
+        try (BufferedReader reader = new BufferedReader(new FileReader(file));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(file.getAbsolutePath().replace(".op", ".res")))) {
 
-                    int number1 = Integer.parseInt(parts[0]);
-                    String operator = parts[1];
-                    int number2 = Integer.parseInt(parts[2]);
-
-                    Operation operation = OperationFactory.getOperation(operator);
-                    if (operation == null) {
-                        writer.write("ERROR");
-                        writer.newLine();
-                        continue;
-                    }
-
-                    float result = operation.perform(number1, number2);
-                    if (Float.isNaN(result)) {
-                        writer.write("ERROR");
-                    } else if (result == (int) result) {
-                        writer.write(String.valueOf((int) result));
-                    } else {
-                        writer.write(String.format("%.2f", result));
-                    }
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(" ");
+                if (parts.length != 3) {
+                    writer.write("ERROR");
                     writer.newLine();
+                    continue;
                 }
+
+                try {
+                    Integer.parseInt(parts[0]);
+                    Integer.parseInt(parts[2]);
+                } catch (NumberFormatException e) {
+                    writer.write("ERROR");
+                    writer.newLine();
+                    continue;
+                }
+
+                int number1 = Integer.parseInt(parts[0]);
+                String operator = parts[1];
+                int number2 = Integer.parseInt(parts[2]);
+
+                Operation operation = OperationFactory.getOperation(operator);
+                if (operation == null) {
+                    writer.write("ERROR");
+                    writer.newLine();
+                    continue;
+                }
+
+                float result = operation.perform(number1, number2);
+                if (Float.isNaN(result)) {
+                    writer.write("ERROR");
+                } else if (result == (int) result) {
+                    writer.write(String.valueOf((int) result));
+                } else {
+                    writer.write(String.format("%.2f", result));
+                }
+                writer.newLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
