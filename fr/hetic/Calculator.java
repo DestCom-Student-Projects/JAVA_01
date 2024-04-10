@@ -55,26 +55,44 @@ class Calculator {
                         processFile(file);
                     }
                 }
+            } else if (file.isDirectory()) {
+                fileOperation(file);
             }
         }
     }
 
     public static void processFile(File fichier) {
-        float[] resList = new float[0];
+        String[] resList = new String[0];
         try (BufferedReader reader = new BufferedReader(new FileReader(fichier))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(" ");
-                int number1 = Integer.parseInt(parts[0]);
-                String operator = parts[1];
-                int number2 = Integer.parseInt(parts[2]);
+                try {
+                    String[] parts = line.split(" ");
+                    int number1 = Integer.parseInt(parts[0]);
+                    String operator = parts[1];
+                    int number2 = Integer.parseInt(parts[2]);
 
-                float res = operation(number1, operator, number2, "file");
+                    float res = operation(number1, operator, number2, "file");
 
-                float[] temp = new float[resList.length + 1];
-                System.arraycopy(resList, 0, temp, 0, resList.length);
-                temp[resList.length] = res;
-                resList = temp;
+                    //If res NaN, add "ERROR" to resList
+                    if(Float.isNaN(res)) {
+                        String[] temp = new String[resList.length + 1];
+                        System.arraycopy(resList, 0, temp, 0, resList.length);
+                        temp[resList.length] = "ERROR";
+                        resList = temp;
+                        continue;
+                    }
+
+                    String[] temp = new String[resList.length + 1];
+                    System.arraycopy(resList, 0, temp, 0, resList.length);
+                    temp[resList.length] = String.valueOf(res);
+                    resList = temp;
+                } catch (Exception e) {
+                    String[] temp = new String[resList.length + 1];
+                    System.arraycopy(resList, 0, temp, 0, resList.length);
+                    temp[resList.length] = "ERROR";
+                    resList = temp;
+                }
             }
 
             writeToFile(
@@ -84,16 +102,17 @@ class Calculator {
         }
     }
 
-    public static void writeToFile(String fileName, String directory, float[] resList) {
+    public static void writeToFile(String fileName, String directory, String[] resList) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(directory + "/" + fileName))) {
-            for (float res : resList) {
-                if (Float.isNaN(res)) {
-                    writer.write("ERROR");
-                } else if(res == (int) res) {
-                    writer.write(String.valueOf((int) res));
+            for (String res : resList) {
+                if (res.equals("ERROR")) {
+                    writer.write(res);
+                } else if (res.endsWith(".0")) {
+                    writer.write(res.substring(0, res.length() - 2));
                 } else {
-                    writer.write(String.format("%.2f", res));
+                    writer.write(String.format("%.2f", Float.parseFloat(res)));
                 }
+                
                 writer.newLine();
             }
         } catch (IOException e) {
@@ -125,7 +144,7 @@ class Calculator {
                 System.out.println("Usage: java Calculator <number1> <operator> <number2>");
                 System.out.println("Supported operators: +, -, * or x, /");
                 System.out.println("If using * or /, please add quotes around the operator");
-                System.exit(1);
+                return Float.NaN;
         }
 
         if (method.equals("cli")) {
