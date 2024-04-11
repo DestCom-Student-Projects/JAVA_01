@@ -11,14 +11,28 @@ import org.stroyco.appsone.Strategy.Operation;
 public class App 
 {
      public static void main(String[] args) {
-        if (args.length == 3) {
-            int number1 = Integer.parseInt(args[0]);
-            String operator = args[1];
-            int number2 = Integer.parseInt(args[2]);
+        String method = ConfigReader.getProperties("implementation");
+
+        if (method.equals("MANUAL")) {
+            int number1 = Integer.parseInt(ConfigReader.getProperties("number1"));
+            String operator = ConfigReader.getProperties("operator");
+            int number2 = Integer.parseInt(ConfigReader.getProperties("number2"));
+
+            if (operator == null || operator.isEmpty()) {
+                System.err.println("Operator not found");
+                System.exit(1);
+            }
 
             performOperation(number1, operator, number2);
-        } else if (args.length == 1) {
-            Path directory = Paths.get(args[0]);
+        } else if (method.equals("FOLDER")) {
+            String filePath = ConfigReader.getProperties("filePath");
+
+            if (filePath == null || filePath.isEmpty()) {
+                System.err.println("File path not found");
+                System.exit(1);
+            }
+            
+            Path directory = Paths.get(filePath);
 
             if (!Files.isDirectory(directory)) {
                 System.err.println("Directory not found");
@@ -34,7 +48,11 @@ public class App
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
+        } 
+        else if (method.equals("JDBC")) {
+            BddMethod.main(args);
+        }
+        else {
             printUsage();
         }
     }
@@ -96,6 +114,28 @@ public class App
             e.printStackTrace();
         }
     }
+
+    public static void writeResultsToFile(int fileId, float result) {
+        String folderName = "assets/JDBC";
+        String fileName = folderName + "/" + fileId + ".res";
+        try {
+            // Vérifier si le dossier existe, sinon le créer
+            Path folderPath = Paths.get(folderName);
+            if (!Files.exists(folderPath)) {
+                Files.createDirectories(folderPath);
+            }
+
+            // Ouvrir le fichier en mode append
+            try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(fileName), StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+                // Écrire le résultat dans une nouvelle ligne
+                writer.write(Float.toString(result));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private static void printUsage() {
         System.out.println("Please use a valid method to use the calculator");

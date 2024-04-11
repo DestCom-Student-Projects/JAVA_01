@@ -1,0 +1,15 @@
+implementation=JDBC
+#JDBC, MANUAL, FOLDER
+
+#For folder based implementation
+filePath=""
+
+#For JDBC based implementation
+databaseString=
+databaseUser=etudiant
+databasePassword=MT4@hetic2324
+
+#For MANUAL based implementation
+numberOne=1
+numberTwo=2
+operatior=+
