@@ -1,13 +1,13 @@
-package fr.hetic.Factory;
+package without_maven.fr.hetic.Factory;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import fr.hetic.Strategy.Operation;
-import fr.hetic.Strategy.Implementation.AddOperation;
-import fr.hetic.Strategy.Implementation.DivideOperation;
-import fr.hetic.Strategy.Implementation.MultiplyOperation;
-import fr.hetic.Strategy.Implementation.SubtractOperation;
+import without_maven.fr.hetic.Strategy.Operation;
+import without_maven.fr.hetic.Strategy.Implementation.AddOperation;
+import without_maven.fr.hetic.Strategy.Implementation.DivideOperation;
+import without_maven.fr.hetic.Strategy.Implementation.MultiplyOperation;
+import without_maven.fr.hetic.Strategy.Implementation.SubtractOperation;
 
 public class OperationFactory {
     private static final Map<String, Operation> operations = new HashMap<>();

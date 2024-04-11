@@ -1,6 +1,6 @@
-package fr.hetic.Strategy.Implementation;
+package org.stroyco.appsone.Strategy.Implementation;
 
-import fr.hetic.Strategy.Operation;
+import org.stroyco.appsone.Strategy.Operation;
 
 
 public class DivideOperation implements Operation {

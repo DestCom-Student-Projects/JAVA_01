@@ -1,6 +1,6 @@
-package fr.hetic.Strategy.Implementation;
+package without_maven.fr.hetic.Strategy.Implementation;
 
-import fr.hetic.Strategy.Operation;
+import without_maven.fr.hetic.Strategy.Operation;
 
 
 public class MultiplyOperation implements Operation {

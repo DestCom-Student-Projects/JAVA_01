@@ -1,6 +1,13 @@
 # Exercices JAVA MT4 - 1
 
-## Usage
+## Usage with maven (folder `hetic-calculator`)
+
+```bash
+mvn clean install
+java -jar target/hetic-calculator-1.0-SNAPSHOT.jar <number1> <operator> <number2>
+```
+
+## Usage without maven (folder `without_maven`)
 
 ```bash
 java Calculator <number1> <operator> <number2>

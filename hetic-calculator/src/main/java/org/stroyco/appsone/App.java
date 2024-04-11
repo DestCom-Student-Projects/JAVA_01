@@ -1,14 +1,15 @@
-package fr.hetic;
+package org.stroyco.appsone;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.stream.*;
 
-import fr.hetic.Factory.OperationFactory;
-import fr.hetic.Strategy.Operation;
+import org.stroyco.appsone.Factory.OperationFactory;
+import org.stroyco.appsone.Strategy.Operation;
 
-public class Calculator {
-    public static void main(String[] args) {
+public class App 
+{
+     public static void main(String[] args) {
         if (args.length == 3) {
             int number1 = Integer.parseInt(args[0]);
             String operator = args[1];
@@ -27,7 +28,7 @@ public class Calculator {
                 Files.walk(directory)
                      .filter(Files::isRegularFile)
                      .filter(file -> file.getFileName().toString().endsWith(".op"))
-                     .forEach(Calculator::processFile);
+                     .forEach(App::processFile);
                 System.out.println("Operation(s) completed");
             } catch (IOException e) {
                 e.printStackTrace();
