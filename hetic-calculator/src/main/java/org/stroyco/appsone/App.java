@@ -3,6 +3,7 @@ package org.stroyco.appsone;
 import java.io.*;
 import java.nio.file.*;
 import java.util.stream.*;
+import org.apache.commons.lang3.StringUtils;
 
 import org.stroyco.appsone.Factory.OperationFactory;
 import org.stroyco.appsone.Strategy.Operation;
@@ -52,7 +53,7 @@ public class App
         try (Stream<String> lines = Files.lines(filePath);
              BufferedWriter writer = Files.newBufferedWriter(filePath.resolveSibling(filePath.getFileName().toString().replace(".op", ".res")))) {
 
-            lines.map(line -> line.split(" "))
+            lines.map(line -> line.split(StringUtils.SPACE))
                  .filter(parts -> parts.length == 3)
                  .filter(parts -> isValidNumber(parts[0]) && isValidNumber(parts[2]))
                  .forEach(parts -> {
