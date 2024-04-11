@@ -1,6 +1,8 @@
 package fr.hetic;
 
 import java.io.*;
+import java.nio.file.*;
+import java.util.stream.*;
 
 import fr.hetic.Factory.OperationFactory;
 import fr.hetic.Strategy.Operation;
@@ -12,81 +14,72 @@ public class Calculator {
             String operator = args[1];
             int number2 = Integer.parseInt(args[2]);
 
-            Operation operation = OperationFactory.getOperation(operator);
-            if (operation == null) {
-                System.err.println("Invalid operator");
-                System.exit(1);
-            }
-
-            float result = operation.perform(number1, number2);
-            System.out.println("Result: " + result);
+            performOperation(number1, operator, number2);
         } else if (args.length == 1) {
-            File ops = new File(args[0]);
+            Path directory = Paths.get(args[0]);
 
-            if (!ops.isDirectory()) {
-                System.err.println("File not found");
+            if (!Files.isDirectory(directory)) {
+                System.err.println("Directory not found");
                 System.exit(1);
             }
 
-            fileOperation(ops);
-
-            System.out.println("Operation(s) completed");
-        } else {
-            System.out.println("Please use a valid method to use the calculator");
-            System.out.println("Usage: java Calculator <number1> <operator> <number2>");
-            System.out.println("or");
-            System.out.println("Usage: java Calculator <pathToDirectory>");
-            System.out.println("Supported operators: +, -, * or x, /");
-            System.out.println("If using * or / in cli, please add quotes around the operator");
-        }
-    }
-
-    public static void fileOperation(File folder) {
-        File[] listOfFiles = folder.listFiles();
-
-        for (File file : listOfFiles) {
-            if (file.isFile() && file.getName().endsWith(".op")) {
-                System.out.println("Found file: " + file.getName());
-                processFile(file);
-            } else if (file.isDirectory()) {
-                fileOperation(file); 
+            try {
+                Files.walk(directory)
+                     .filter(Files::isRegularFile)
+                     .filter(file -> file.getFileName().toString().endsWith(".op"))
+                     .forEach(Calculator::processFile);
+                System.out.println("Operation(s) completed");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        } else {
+            printUsage();
         }
     }
 
-    public static void processFile(File file) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(file.getAbsolutePath().replace(".op", ".res")))) {
+    private static void performOperation(int number1, String operator, int number2) {
+        Operation operation = OperationFactory.getOperation(operator);
+        if (operation == null) {
+            System.err.println("Invalid operator");
+            System.exit(1);
+        }
+        float result = operation.perform(number1, number2);
+        System.out.println("Result: " + result);
+    }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(" ");
-                if (parts.length != 3) {
-                    writer.write("ERROR");
-                    writer.newLine();
-                    continue;
-                }
+    private static void processFile(Path filePath) {
+        try (Stream<String> lines = Files.lines(filePath);
+             BufferedWriter writer = Files.newBufferedWriter(filePath.resolveSibling(filePath.getFileName().toString().replace(".op", ".res")))) {
 
-                try {
-                    Integer.parseInt(parts[0]);
-                    Integer.parseInt(parts[2]);
-                } catch (NumberFormatException e) {
-                    writer.write("ERROR");
-                    writer.newLine();
-                    continue;
-                }
+            lines.map(line -> line.split(" "))
+                 .filter(parts -> parts.length == 3)
+                 .filter(parts -> isValidNumber(parts[0]) && isValidNumber(parts[2]))
+                 .forEach(parts -> {
+                     int number1 = Integer.parseInt(parts[0]);
+                     String operator = parts[1];
+                     int number2 = Integer.parseInt(parts[2]);
+                     performOperationToFile(number1, operator, number2, writer);
+                 });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-                int number1 = Integer.parseInt(parts[0]);
-                String operator = parts[1];
-                int number2 = Integer.parseInt(parts[2]);
+    private static boolean isValidNumber(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
-                Operation operation = OperationFactory.getOperation(operator);
-                if (operation == null) {
-                    writer.write("ERROR");
-                    writer.newLine();
-                    continue;
-                }
-
+    private static void performOperationToFile(int number1, String operator, int number2, BufferedWriter writer) {
+        Operation operation = OperationFactory.getOperation(operator);
+        try {
+            if (operation == null) {
+                writer.write("ERROR");
+            } else {
                 float result = operation.perform(number1, number2);
                 if (Float.isNaN(result)) {
                     writer.write("ERROR");
@@ -95,10 +88,19 @@ public class Calculator {
                 } else {
                     writer.write(String.format("%.2f", result));
                 }
-                writer.newLine();
             }
+            writer.newLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void printUsage() {
+        System.out.println("Please use a valid method to use the calculator");
+        System.out.println("Usage: java Calculator <number1> <operator> <number2>");
+        System.out.println("or");
+        System.out.println("Usage: java Calculator <pathToDirectory>");
+        System.out.println("Supported operators: +, -, * or x, /");
+        System.out.println("If using * or / in cli, please add quotes around the operator");
     }
 }
